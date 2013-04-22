@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import argparse
+import cmd
+import os
+import readline
+import sqlite3
+import sys
+
+DB_SCRIPT = """
+CREATE TABLE IF NOT EXISTS race (
+	race_id INTEGER PRIMARY KEY AUTOINCREMENT
+);
+
+CREATE TABLE IF NOT EXISTS person (
+	person_id INTEGER PRIMARY KEY AUTOINCREMENT
+);
+
+CREATE TABLE IF NOT EXISTS  time (
+	time_id INTEGER PRIMARY KEY AUTOINCREMENT
+);
+"""
+
+class CapoCmd(cmd.Cmd):
+	intro = """
+	capo - your friendly handicap-race manager
+	"""
+
+	def __init__(self, dbconn):
+		cmd.Cmd.__init__(self)
+		self._db = dbconn
+
+	def do_quit(self, line):
+		return True
+	do_exit = do_quit
+
+
+def main(argv=sys.argv[1:]):
+	new_db = not os.path.exists('capo.sqlite')
+
+	dbconn = sqlite3.connect('capo.sqlite')
+	if new_db:
+		dbconn.executescript(DB_SCRIPT)
+
+	driver = CapoCmd(dbconn)
+	driver.cmdloop()
+
+
+if __name__ == '__main__':
+	main()
