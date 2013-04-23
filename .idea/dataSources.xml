@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" hash="3084936381">
+    <data-source source="LOCAL" name="Data Source" product="" version="" jdbc-version="" driver-name="" driver-version="" uuid="51e6fdfc-2aca-4d78-b1be-8b7e8ec0705c">
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc://capo.sqlite</jdbc-url>
+      <libraries>
+        <library>
+          <url>jar://$PROJECT_DIR$/sqlite-jdbc-3.7.2.jar!/</url>
+        </library>
+        <library>
+          <url>file://$PROJECT_DIR$/xerial-sqlite-license.txt</url>
+        </library>
+      </libraries>
+    </data-source>
+  </component>
+</project>
+

@@ -1,39 +1,50 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import argparse
 import cmd
 import os
-import readline
+from os.path import join as join_path, dirname
 import sqlite3
 import sys
 
-DB_SCRIPT = """
-CREATE TABLE IF NOT EXISTS race (
-	race_id INTEGER PRIMARY KEY AUTOINCREMENT
-);
 
-CREATE TABLE IF NOT EXISTS person (
-	person_id INTEGER PRIMARY KEY AUTOINCREMENT
-);
+def data_file(fn):
+    return join_path(dirname(__file__), 'data', fn)
 
-CREATE TABLE IF NOT EXISTS  time (
-	time_id INTEGER PRIMARY KEY AUTOINCREMENT
-);
-"""
+DB_SCRIPT = open(data_file('capo.ddl')).read()
 
-class CapoCmd(cmd.Cmd):
-	intro = """
+
+class CapoCmd(object, cmd.Cmd):
+    intro = """
 	capo - your friendly handicap-race manager
-	"""
+	""".strip()
 
-	def __init__(self, dbconn):
-		cmd.Cmd.__init__(self)
-		self._db = dbconn
+    def __init__(self, dbconn):
+        cmd.Cmd.__init__(self)
+        self._db = dbconn
 
-	def do_quit(self, line):
-		return True
-	do_exit = do_quit
+    def do_quit(self, line):
+        """Stop Capo."""
+        print line
+        return True
+
+    do_exit = do_quit
+
+    def do_runners(self, line):
+        """
+        Print out all known runners
+        """
+        runners = self._db.execute("""SELECT person.name AS name FROM person""")
+        for runner in runners:
+            print runner[0]
+
+
+    def do_testdata(self, line):
+        """ Load test data into the database
+        """
+        test_script = open(data_file('testdata.sql')).read()
+        self._db.executescript(test_script)
+
 
 
 def main(argv=sys.argv[1:]):
