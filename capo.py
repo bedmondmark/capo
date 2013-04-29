@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import capolib
 import cmd
 import os
 from os.path import join as join_path, dirname
@@ -8,7 +9,7 @@ import sqlite3
 
 
 def data_file(fn):
-    return join_path(dirname(__file__), 'data', fn)
+    return join_path(dirname(capolib.__file__), 'data', fn)
 
 
 DB_SCRIPT = open(data_file('capo.ddl')).read()

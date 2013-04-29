@@ -2,3 +2,4 @@ capo.sqlite
 .dev_activate
 .idea
 *.jar
+*.pyc
