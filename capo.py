@@ -8,7 +8,7 @@ from os.path import join as join_path, dirname
 import sqlite3
 
 
-DB_SCRIPT = open(capolib.data_file('capo.ddl')).read()
+DB_SCRIPT = open(capolib.data_file('capo_ddl.sql')).read()
 
 
 class CapoCmd(object, cmd.Cmd):
