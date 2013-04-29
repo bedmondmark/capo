@@ -4,6 +4,16 @@
 import capolib
 import capolib.db
 import cmd
+from textwrap import dedent
+
+
+def command(f):
+    """
+    A decorator that reformats the wrapped function's docstring.
+    """
+    if f.__doc__:
+        f.__doc__ = dedent(f.__doc__)
+    return f
 
 
 class CapoCmd(object, cmd.Cmd):
@@ -24,13 +34,15 @@ class CapoCmd(object, cmd.Cmd):
         cmd.Cmd.__init__(self)
         self._db = capolib.db.CapoDB(db_path)
 
+    @command
     def do_quit(self, line):
-        """ Stop Capo."""
+        """Quit capo."""
         print line
         return True
 
     do_exit = do_quit
 
+    @command
     def do_runners(self, _):
         """
         List all known runners
@@ -38,9 +50,12 @@ class CapoCmd(object, cmd.Cmd):
         for runner in self._db.runners():
             print runner.name
 
+    @command
     def do_races(self, _):
         """
-        List all the known races
+        List all the known races.
+
+        This will show you the id, race date and distance for each race.
         """
         for race in self._db.races():
             print "{id:02d} {date} {distance}km".format(
@@ -48,6 +63,7 @@ class CapoCmd(object, cmd.Cmd):
                 date=race.race_date,
                 distance=race.distance_km)
 
+    @command
     def do_testdata(self, _):
         """
         Load test data into the database
