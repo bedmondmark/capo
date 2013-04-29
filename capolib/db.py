@@ -39,7 +39,7 @@ class CapoDB(object):
         """
         Connect to a Capo database, creating a new file if necessary.
 
-        path defaults to 'capo.sqlite' in the current directory if not provided.
+        path defaults to 'capo.sqlite' in the current directory if not provided
         """
         self._path = abspath(path)
 
