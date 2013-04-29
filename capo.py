@@ -8,11 +8,7 @@ from os.path import join as join_path, dirname
 import sqlite3
 
 
-def data_file(fn):
-    return join_path(dirname(capolib.__file__), 'data', fn)
-
-
-DB_SCRIPT = open(data_file('capo.ddl')).read()
+DB_SCRIPT = open(capolib.data_file('capo.ddl')).read()
 
 
 class CapoCmd(object, cmd.Cmd):
@@ -58,7 +54,7 @@ class CapoCmd(object, cmd.Cmd):
         """
         Load test data into the database
         """
-        test_script = open(data_file('testdata.sql')).read()
+        test_script = open(capolib.data_file('testdata.sql')).read()
         self._db.executescript(test_script)
 
 
