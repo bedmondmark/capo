@@ -1,24 +1,35 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import capolib
-import capolib.db
+"""
+Capo is your friendly handicap-race manager.
+"""
+
+from __future__ import absolute_import
+
 import cmd
 from textwrap import dedent
 
+import capolib
+import capolib.db
 
-def command(f):
+
+def command(func):
     """
     A decorator that reformats the wrapped function's docstring.
     """
-    if f.__doc__:
-        f.__doc__ = dedent(f.__doc__)
-    return f
+    if func.__doc__:
+        func.__doc__ = dedent(func.__doc__)
+    return func
 
 
 class CapoCmd(object, cmd.Cmd):
+    """
+    Logic engine for Capo's command-line input loop.
+    """
+
     prompt = "capo> "
-    intro = """
+    intro = r"""
          _\|/_
          (o o)
  +----oOO-{_}-OOo------------------------------------------+
@@ -35,7 +46,8 @@ class CapoCmd(object, cmd.Cmd):
         self._db = capolib.db.CapoDB(db_path)
 
     @command
-    def do_quit(self, line):
+    @staticmethod
+    def do_quit(line):
         """Quit capo."""
         print line
         return True
@@ -68,10 +80,13 @@ class CapoCmd(object, cmd.Cmd):
         """
         Load test data into the database
         """
-        self._db._insert_test_data()
+        self._db.insert_test_data()
 
 
 def main():
+    """
+    Entry point for Capo.
+    """
     driver = CapoCmd('capo.sqlite')
     try:
         driver.cmdloop()
