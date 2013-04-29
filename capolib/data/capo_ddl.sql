@@ -1,7 +1,8 @@
 CREATE TABLE race (
 	race_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	race_date TEXT NOT NULL,
-	race_start_time TEXT
+  distance_km INTEGER NOT NULL,
+	start_time TEXT
 );
 
 CREATE TABLE person (

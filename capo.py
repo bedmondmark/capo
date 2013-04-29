@@ -2,13 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import capolib
+import capolib.db
 import cmd
-import os
-from os.path import join as join_path, dirname
-import sqlite3
-
-
-DB_SCRIPT = open(capolib.data_file('capo_ddl.sql')).read()
 
 
 class CapoCmd(object, cmd.Cmd):
@@ -25,9 +20,9 @@ class CapoCmd(object, cmd.Cmd):
  type 'help' for more instructions
  """
 
-    def __init__(self, dbconn):
+    def __init__(self, db_path):
         cmd.Cmd.__init__(self)
-        self._db = dbconn
+        self._db = capolib.db.CapoDB(db_path)
 
     def do_quit(self, line):
         """ Stop Capo."""
@@ -36,36 +31,32 @@ class CapoCmd(object, cmd.Cmd):
 
     do_exit = do_quit
 
-    def do_runners(self, line):
+    def do_runners(self, _):
         """
         List all known runners
         """
-        runners = self._db.execute("""SELECT person.name AS name FROM person""")
-        for runner in runners:
-            print runner[0]
+        for runner in self._db.runners():
+            print runner.name
 
-    def do_races(self, line):
+    def do_races(self, _):
         """
         List all the known races
         """
-        races = self._db.execute("""SELECT race_date, race_start_time""")
+        for race in self._db.races():
+            print "{id:02d} {date} {distance}km".format(
+                id=race.id,
+                date=race.race_date,
+                distance=race.distance_km)
 
-    def do_testdata(self, line):
+    def do_testdata(self, _):
         """
         Load test data into the database
         """
-        test_script = open(capolib.data_file('testdata.sql')).read()
-        self._db.executescript(test_script)
+        self._db._insert_test_data()
 
 
 def main():
-    new_db = not os.path.exists('capo.sqlite')
-
-    dbconn = sqlite3.connect('capo.sqlite')
-    if new_db:
-        dbconn.executescript(DB_SCRIPT)
-
-    driver = CapoCmd(dbconn)
+    driver = CapoCmd('capo.sqlite')
     try:
         driver.cmdloop()
     except KeyboardInterrupt:
