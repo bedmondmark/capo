@@ -45,8 +45,8 @@ class CapoCmd(object, cmd.Cmd):
         cmd.Cmd.__init__(self)
         self._db = capolib.db.CapoDB(db_path)
 
-    @command
     @staticmethod
+    @command
     def do_quit(line):
         """Quit capo."""
         print line

@@ -12,7 +12,7 @@ import sqlite3
 
 import capolib
 
-# pylint: disable-msg=C0103
+# pylint: disable-msg=invalid-name
 Runner = namedtuple("Runner", ['id', 'name'])
 Race = namedtuple("Race", ['id', 'race_date', 'distance_km'])
 
@@ -25,10 +25,15 @@ def format_time(secs):
     if secs < 3600:
         return '{m}:{s:02}'.format(m=secs//60, s=secs % 60)
     else:
-        h = secs // 3600
-        m = (secs - (h * 3600)) // 60
-        s = (secs - (h * 3600)) - (m * 60)
-        return '{h}:{m:02}:{s:02}'.format(h=h, m=m, s=s)
+        hours = secs // 3600
+        mins = (secs - (hours * 3600)) // 60
+        secs = (secs - (hours * 3600)) - (mins * 60)
+        return '{h}:{m:02}:{s:02}'.format(h=hours, m=mins, s=secs)
+
+
+def parse_time(t_str):
+    parts = reversed(t_str.split(':'))
+    return sum(int(part) * (60 ** index) for index, part in enumerate(parts))
 
 
 class CapoDB(object):
