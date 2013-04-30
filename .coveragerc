@@ -1,0 +1,7 @@
+; vim: ft=dosini
+[run]
+source=
+    .
+    capolib
+omit=test.py
+[report]

@@ -3,3 +3,5 @@ capo.sqlite
 .idea
 *.jar
 *.pyc
+.coverage
+htmlcov
