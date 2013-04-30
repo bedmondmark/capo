@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from os.path import join as join_path
 import unittest
 
-class DBTestCase(unittest.TestCase):
+class dbTestCase(unittest.TestCase):
     @property
     def _db(self):
         import capolib.db
@@ -37,6 +37,34 @@ class DBTestCase(unittest.TestCase):
         self.assertEqual(3601, parse_time('1:00:01'))
         self.assertEqual(3660, parse_time('1:01:00'))
         self.assertEqual(3661, parse_time('1:01:01'))
+
+
+class CapoDBTestCase(unittest.TestCase):
+    @property
+    def _db(self):
+        import capolib.db
+        return capolib.db
+
+    def setUp(self):
+        self.cdb = self._db.CapoDB(':memory:')
+        self.cdb.insert_test_data()
+
+    def test_runners(self):
+        self.assertEqual(['Chris', 'James', 'Mark', 'Martin'],
+                         list(r.name for r in self.cdb.runners()))
+
+    def test_races(self):
+        self.assertEqual([], list(self.cdb.races()))
+
+
+class CapoCmdTestCase(unittest.TestCase):
+    @property
+    def _console(self):
+        import capolib.console
+        return capolib.console
+
+    def test_import(self):
+        self._console
 
 
 class InitTestCase(unittest.TestCase):

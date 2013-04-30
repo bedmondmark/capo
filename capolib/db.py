@@ -50,9 +50,13 @@ class CapoDB(object):
 
         path defaults to 'capo.sqlite' in the current directory if not provided
         """
-        self._path = abspath(path)
+        if path != ':memory:':
+            self._path = abspath(path)
+            create_db = not exists(path)
+        else:
+            self._path = ':memory:'
+            create_db = True
 
-        create_db = not exists(path)
         self._db = sqlite3.connect(path)
         if create_db:
             self._create()
@@ -72,6 +76,12 @@ class CapoDB(object):
                                    "person.person_id, person.name AS name "
                                    "FROM person ORDER BY person.name")
         return [Runner(*r) for r in runners]    # pylint: disable-msg=star-args
+
+    def complete_runner(self, prefix):
+        runners = self._db.execute(
+            "SELECT name FROM person WHERE name LIKE '{prefix}%'"
+            .format(prefix=prefix))
+        return [r[0] for r in runners]
 
     def races(self):
         """
