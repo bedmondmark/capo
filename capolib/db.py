@@ -32,6 +32,10 @@ def format_time(secs):
 
 
 def parse_time(t_str):
+    """
+    Parses a time string to an int containing the number of seconds. Supported
+    input formats are 'h:mm:ss' and 'm:ss'.
+    """
     parts = reversed(t_str.split(':'))
     return sum(int(part) * (60 ** index) for index, part in enumerate(parts))
 
@@ -67,7 +71,7 @@ class CapoDB(object):
         runners = self._db.execute("SELECT "
                                    "person.person_id, person.name AS name "
                                    "FROM person ORDER BY person.name")
-        return [Runner(*r) for r in runners]
+        return [Runner(*r) for r in runners]    # pylint: disable-msg=star-args
 
     def races(self):
         """
@@ -75,7 +79,7 @@ class CapoDB(object):
         """
         races = self._db.execute("SELECT race_id, race_date, distance_km "
                                  "FROM race ORDER BY race_date")
-        return [Race(*r) for r in races]
+        return [Race(*r) for r in races]    # pylint: disable-msg=star-args
 
     def insert_test_data(self):
         """
