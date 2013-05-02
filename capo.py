@@ -24,8 +24,8 @@ def main(argv=sys.argv[1:]):
     args = arg_parser.parse_args(argv)
 
     if args.command == 'web':
-        print >> sys.stderr, 'Web support not yet implemented.'
-        return -1
+        import capolib.web
+        capolib.web.start()
     elif args.command == 'console':
         driver = CapoCmd('capo.sqlite')
         try:
