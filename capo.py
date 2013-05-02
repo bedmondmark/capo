@@ -17,11 +17,14 @@ def main(argv=sys.argv[1:]):
     Entry point for Capo.
     """
     arg_parser = argparse.ArgumentParser(description="Run Capo")
-    arg_parser.add_argument('command', default='console', nargs='?', choices=['web', 'console'])
+    arg_parser.add_argument('command',
+                            default='console',
+                            nargs='?',
+                            choices=['web', 'console'])
     args = arg_parser.parse_args(argv)
 
     if args.command == 'web':
-        print >>sys.stderr, 'Web support not yet implemented.'
+        print >> sys.stderr, 'Web support not yet implemented.'
         return -1
     elif args.command == 'console':
         driver = CapoCmd('capo.sqlite')
