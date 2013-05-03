@@ -54,7 +54,14 @@ class CapoDBTestCase(unittest.TestCase):
                          list(r.name for r in self.cdb.runners()))
 
     def test_races(self):
-        self.assertEqual([], list(self.cdb.races()))
+        self.assertEqual(
+            [self._db.Race(id=1, race_date=u'2013-01-05', distance_km=5),
+             self._db.Race(id=2, race_date=u'2013-02-06', distance_km=5)],
+            list(self.cdb.races()))
+
+    def test_results(self):
+        self.assertEqual(2, len(self.cdb.results(1)))
+        self.assertEqual(2, len(self.cdb.results(2)))
 
 
 class CapoCmdTestCase(unittest.TestCase):

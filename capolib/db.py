@@ -15,7 +15,8 @@ import capolib
 # pylint: disable-msg=invalid-name
 Runner = namedtuple("Runner", ['id', 'name'])
 Race = namedtuple("Race", ['id', 'race_date', 'distance_km'])
-
+Result = namedtuple("Result", ['race_id', 'race_date', 'runner_id',
+                               'runner_name', 'race_duration_seconds'])
 
 def format_time(secs):
     """
@@ -78,6 +79,9 @@ class CapoDB(object):
         return [Runner(*r) for r in runners]    # pylint: disable-msg=star-args
 
     def complete_runner(self, prefix):
+        """
+        Returns all runner names that begin with the supplied prefix.
+        """
         runners = self._db.execute(
             "SELECT name FROM person WHERE name LIKE '{prefix}%'"
             .format(prefix=prefix))
@@ -90,6 +94,14 @@ class CapoDB(object):
         races = self._db.execute("SELECT race_id, race_date, distance_km "
                                  "FROM race ORDER BY race_date")
         return [Race(*r) for r in races]    # pylint: disable-msg=star-args
+
+    def results(self, race_id):
+        """
+        Return a sequence of Result objects for a specified race.
+        """
+        results = self._db.execute("SELECT * FROM results WHERE race_id = ?",
+                                   (race_id,))
+        return [Result(*r) for r in results]    # pylint: disable-msg=star-args
 
     def insert_test_data(self):
         """
