@@ -100,9 +100,32 @@ class CapoDB(object):
         """
         Return a sequence of Result objects for a specified race.
         """
-        results = self._db.execute("SELECT * FROM results WHERE race_id = ?",
-                                   (race_id,))
+        results = self._db.execute("SELECT * FROM results WHERE race_id = ? "
+                                   "ORDER BY race_date", (race_id,))
         return [Result(*r) for r in results]    # pylint: disable-msg=star-args
+
+    def next_handicap(self, runner_id, for_race_date=None):
+        """
+        Calculate an estimated time for the next race (or the date provided as
+        'for_race_date', if provided.
+
+        for_race_date should be formatted as yyyy-mm-dd
+        """
+        if for_race_date is None:
+            results = self._db.execute("SELECT race_duration_secs "
+                                       "FROM results "
+                                       "WHERE runner_id = ? "
+                                       "ORDER BY race_date DESC LIMIT 3",
+                                       (runner_id,))
+        else:
+            results = self._db.execute("SELECT race_duration_secs "
+                                       "FROM results "
+                                       "WHERE runner_id = ? "
+                                       "AND race_date < ? "
+                                       "ORDER BY race_date DESC LIMIT 3",
+                                       (runner_id, for_race_date))
+        durations = [r[0] for r in results]
+        return sum(durations) / float(len(durations))
 
     def insert_test_data(self):
         """

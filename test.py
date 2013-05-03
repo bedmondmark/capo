@@ -63,6 +63,10 @@ class CapoDBTestCase(unittest.TestCase):
         self.assertEqual(2, len(self.cdb.results(1)))
         self.assertEqual(2, len(self.cdb.results(2)))
 
+    def test_next_handicap(self):
+        self.assertEqual(1307.5, self.cdb.next_handicap(1))
+        self.assertEqual(1320.0, self.cdb.next_handicap(1, '2013-02-06'))
+
 
 class CapoCmdTestCase(unittest.TestCase):
     @property
