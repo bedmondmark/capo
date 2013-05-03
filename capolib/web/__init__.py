@@ -10,6 +10,7 @@ from flask import Flask
 
 from . import views
 
+
 def start():
     """
     Start the Capo web server.

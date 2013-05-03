@@ -18,6 +18,7 @@ Race = namedtuple("Race", ['id', 'race_date', 'distance_km'])
 Result = namedtuple("Result", ['race_id', 'race_date', 'runner_id',
                                'runner_name', 'race_duration_seconds'])
 
+
 def format_time(secs):
     """
     Formats secs, a number as either 'm:ss' or 'h:mm:ss' if over
