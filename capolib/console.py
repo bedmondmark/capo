@@ -70,12 +70,6 @@ class CapoCmd(object, cmd.Cmd):
                 date=race.race_date,
                 distance=race.distance_km)
 
-    def do_test(self, line):
-        print line
-
-    def complete_test(self, text, _line, _start, _end):
-        return self._db.complete_runner(text)
-
     @command
     def do_testdata(self, _):
         """
