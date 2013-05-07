@@ -8,6 +8,9 @@ the future -- web interfaces, mobile apps, etc. But it probably won't.
 
 TODO
 ----
+* List Runners
+* List Races
+* Race Results
 * Add Runner
 * Add Race
 * Generate Running Order

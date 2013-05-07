@@ -55,7 +55,8 @@ class CapoDBTestCase(unittest.TestCase):
 
     def test_races(self):
         self.assertEqual(
-            [self._db.Race(id=1, race_date=u'2013-01-05', distance_km=5),
+            [self._db.Race(id=0, race_date=u'0000-00-00', distance_km=5),
+             self._db.Race(id=1, race_date=u'2013-01-05', distance_km=5),
              self._db.Race(id=2, race_date=u'2013-02-06', distance_km=5)],
             list(self.cdb.races()))
 
@@ -66,6 +67,9 @@ class CapoDBTestCase(unittest.TestCase):
     def test_next_handicap(self):
         self.assertEqual(1307.5, self.cdb.next_handicap(1))
         self.assertEqual(1320.0, self.cdb.next_handicap(1, '2013-02-06'))
+
+    def test_add_person(self):
+        self.assertNotEqual(self.cdb.add_person('TestPerson'), None)
 
 
 class CapoCmdTestCase(unittest.TestCase):

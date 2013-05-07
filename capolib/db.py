@@ -133,3 +133,31 @@ class CapoDB(object):
         """
         test_script = open(capolib.data_file('testdata.sql')).read()
         self._db.executescript(test_script)
+
+    def add_person(self, name, time_estimate=None):
+        cur = None
+        try:
+            cur = self._db.cursor()
+            cur.execute('INSERT INTO person (name) VALUES (?)', (name,))
+            person_id = cur.lastrowid
+            if time_estimate is not None:
+                cur.execute('INSERT INTO race_time '
+                            '(race_id, person_id, race_duration_secs) '
+                            'VALUES (?, ?, ?)', (0, person_id, time_estimate))
+            self._db.commit()
+            return person_id
+        finally:
+            if cur:
+                cur.close()
+
+    def add_race_time(self, race_id, person_id, time):
+        cur = None
+        try:
+            cur = self._db.cursor()
+            cur.execute('INSERT INTO race_time '
+                        '(race_id, person_id, race_duration_secs) '
+                        'VALUES (?, ?, ?)', (race_id, person_id, time))
+            self._db.commit()
+        finally:
+            if cur:
+                cur.close()

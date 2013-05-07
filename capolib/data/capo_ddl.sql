@@ -23,3 +23,6 @@ CREATE VIEW results AS
   FROM race_time
     NATURAL JOIN person
     NATURAL JOIN race;
+
+/* Insert dummy race for new runner initial estimates. */
+INSERT INTO race (race_id, race_date, distance_km) VALUES (0, '0000-00-00', 5);
