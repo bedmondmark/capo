@@ -15,7 +15,7 @@ import capolib
 # pylint: disable-msg=invalid-name
 Runner = namedtuple("Runner", ['id', 'name'])
 Race = namedtuple("Race", ['id', 'race_date', 'distance_km'])
-Result = namedtuple("Result", ['race_id', 'race_date', 'runner_id',
+Result = namedtuple("Result", ['id', 'race_date', 'runner_id',
                                'runner_name', 'race_duration_seconds'])
 
 
@@ -135,8 +135,11 @@ class CapoDB(object):
         self._db.executescript(test_script)
 
     def add_person(self, name, time_estimate=None):
-        cur = None
-        try:
+        """
+        Add a new person to the datastore. The returned value is the id
+        for the new person record.
+        """
+        with self._db:
             cur = self._db.cursor()
             cur.execute('INSERT INTO person (name) VALUES (?)', (name,))
             person_id = cur.lastrowid
@@ -144,20 +147,14 @@ class CapoDB(object):
                 cur.execute('INSERT INTO race_time '
                             '(race_id, person_id, race_duration_secs) '
                             'VALUES (?, ?, ?)', (0, person_id, time_estimate))
-            self._db.commit()
-            return person_id
-        finally:
-            if cur:
-                cur.close()
+
+        return person_id
 
     def add_race_time(self, race_id, person_id, time):
-        cur = None
-        try:
-            cur = self._db.cursor()
-            cur.execute('INSERT INTO race_time '
-                        '(race_id, person_id, race_duration_secs) '
-                        'VALUES (?, ?, ?)', (race_id, person_id, time))
-            self._db.commit()
-        finally:
-            if cur:
-                cur.close()
+        """
+        Store a race time for the person and race specified.
+        """
+        self._db.execute('INSERT INTO race_time '
+                    '(race_id, person_id, race_duration_secs) '
+                    'VALUES (?, ?, ?)', (race_id, person_id, time))
+        self._db.commit()
