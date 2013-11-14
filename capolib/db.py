@@ -6,17 +6,61 @@ Persistence for Capo, including various conversion functions and model classes.
 
 from __future__ import absolute_import
 
-from collections import namedtuple
 from os.path import abspath, exists
-import sqlite3
 
-import capolib
+import peewee
 
-# pylint: disable-msg=invalid-name
-Runner = namedtuple("Runner", ['id', 'name'])
-Race = namedtuple("Race", ['id', 'race_date', 'distance_km'])
-Result = namedtuple("Result", ['id', 'race_date', 'runner_id',
-                               'runner_name', 'race_duration_seconds'])
+
+db = peewee.SqliteDatabase(None)
+
+
+class Model(peewee.Model):
+    class Meta:
+        database = db
+
+
+class Person(Model):
+    id = peewee.PrimaryKeyField()
+    name = peewee.CharField()
+
+    def next_handicap(self, for_race_date=None):
+        """
+        Calculate an estimated time for the next race (or the date provided as
+        'for_race_date', if provided.
+
+        for_race_date should be formatted as yyyy-mm-dd
+        """
+        query = (RaceEntry.select().join(Race).where(RaceEntry.runner == self))
+        if for_race_date is not None:
+            query = query.where(Race.race_date < for_race_date)
+
+        query = (query.order_by(Race.race_date.desc()).limit(3))
+        durations = [r.actual_time for r in query]
+        if durations:
+            return sum(durations) / float(len(durations))
+        return None
+
+    class Meta:
+        order_by = ('name', )
+
+
+class Race(Model):
+    id = peewee.PrimaryKeyField()
+    race_date = peewee.DateField()
+    distance_km = peewee.FloatField()
+
+    def __repr__(self):
+        return "Race(id={}, distance_km={}, race_date={})".format(
+            self.id, self.distance_km, self.race_date
+        )
+
+
+class RaceEntry(Model):
+    id = peewee.PrimaryKeyField()
+    race = peewee.ForeignKeyField(Race, related_name='entries')
+    runner = peewee.ForeignKeyField(Person, related_name='entries')
+    estimated_time = peewee.IntegerField()
+    actual_time = peewee.IntegerField(null=True)
 
 
 def format_time(secs):
@@ -56,10 +100,12 @@ class CapoDB(object):
             self._path = abspath(path)
             create_db = not exists(path)
         else:
-            self._path = ':memory:'
+            self._path = path
             create_db = True
 
-        self._db = sqlite3.connect(path)
+        db.init(self._path)
+        db.connect()
+
         if create_db:
             self._create()
 
@@ -67,42 +113,39 @@ class CapoDB(object):
         """
         Create a new database, for when one doesn't exist already.
         """
-        db_script = open(capolib.data_file('capo_ddl.sql')).read()
-        self._db.executescript(db_script)
+        #db_script = open(capolib.data_file('capo_ddl.sql')).read()
+        #self._db.executescript(db_script)
+        Person.create_table(True)
+        Race.create_table(True)
+        RaceEntry.create_table(True)
+
+        Race.create(id=0, race_date=u'0000-00-00', distance_km=5)
 
     def runners(self):
         """
         Return a sequence of Runner objects for each stored person.
         """
-        runners = self._db.execute("SELECT "
-                                   "person.person_id, person.name AS name "
-                                   "FROM person ORDER BY person.name")
-        return [Runner(*r) for r in runners]    # pylint: disable-msg=star-args
+        return Person.select().order_by(Person.name)
 
     def complete_runner(self, prefix):
         """
         Returns all runner names that begin with the supplied prefix.
         """
-        runners = self._db.execute(
-            "SELECT name FROM person WHERE name LIKE '{prefix}%'"
-            .format(prefix=prefix))
-        return [r[0] for r in runners]
+        runners = Person.select(Person.name).where(
+            peewee.fn.Substr(Person.name, 1, len(prefix)) == prefix)
+        return [r.name for r in runners]
 
     def races(self):
         """
         Return a sequence of Race objects for each stored race.
         """
-        races = self._db.execute("SELECT race_id, race_date, distance_km "
-                                 "FROM race ORDER BY race_date")
-        return [Race(*r) for r in races]    # pylint: disable-msg=star-args
+        return Race.select()
 
     def results(self, race_id):
         """
         Return a sequence of Result objects for a specified race.
         """
-        results = self._db.execute("SELECT * FROM results WHERE race_id = ? "
-                                   "ORDER BY race_date", (race_id,))
-        return [Result(*r) for r in results]    # pylint: disable-msg=star-args
+        return list(Race.get(Race.id == race_id).entries)
 
     def next_handicap(self, runner_id, for_race_date=None):
         """
@@ -111,44 +154,27 @@ class CapoDB(object):
 
         for_race_date should be formatted as yyyy-mm-dd
         """
-        if for_race_date is None:
-            results = self._db.execute("SELECT race_duration_secs "
-                                       "FROM results "
-                                       "WHERE runner_id = ? "
-                                       "ORDER BY race_date DESC LIMIT 3",
-                                       (runner_id,))
-        else:
-            results = self._db.execute("SELECT race_duration_secs "
-                                       "FROM results "
-                                       "WHERE runner_id = ? "
-                                       "AND race_date < ? "
-                                       "ORDER BY race_date DESC LIMIT 3",
-                                       (runner_id, for_race_date))
-        durations = [r[0] for r in results]
-        return sum(durations) / float(len(durations))
+        return (Person.get(Person.id == runner_id)
+                .next_handicap(for_race_date))
 
     def insert_test_data(self):
         """
         Load test data into the database
         """
-        test_script = open(capolib.data_file('testdata.sql')).read()
-        self._db.executescript(test_script)
+        pass
 
     def add_person(self, name, time_estimate=None):
         """
         Add a new person to the datastore. The returned value is the id
         for the new person record.
         """
-        with self._db:
-            cur = self._db.cursor()
-            cur.execute('INSERT INTO person (name) VALUES (?)', (name,))
-            person_id = cur.lastrowid
-            if time_estimate is not None:
-                cur.execute('INSERT INTO race_time '
-                            '(race_id, person_id, race_duration_secs) '
-                            'VALUES (?, ?, ?)', (0, person_id, time_estimate))
-
-        return person_id
+        with db.transaction():
+            person = Person(name=name)
+            # TODO: The following:
+            # if time_estimate is not None:
+            #     pass
+            person.save()
+        return person
 
     def add_race_time(self, race_id, person_id, time):
         """

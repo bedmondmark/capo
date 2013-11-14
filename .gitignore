@@ -6,3 +6,4 @@ capo.sqlite
 .coverage
 htmlcov
 env/
+.DS_Store

@@ -47,7 +47,51 @@ class CapoDBTestCase(unittest.TestCase):
 
     def setUp(self):
         self.cdb = self._db.CapoDB(':memory:')
-        self.cdb.insert_test_data()
+
+        self._db.Person._meta.auto_increment = False
+        for i, name in [(1, 'Mark'), (2, 'James'), (3, 'Chris'), (4, 'Martin')]:
+            self._db.Person.create(id=i, name=name)
+        self._db.Person._meta.auto_increment = True
+
+
+
+        self._db.Race._meta.auto_increment = True
+        for i, d, dt in [(1, 5, '2013-01-05'), (2, 5, '2013-02-06')]:
+            print 'creating:', i
+            r = self._db.Race.create(distance_km=d, race_date=dt)
+            print r
+        self._db.Race._meta.auto_increment = True
+        """
+        INSERT OR IGNORE INTO person (person_id, name) VALUES (1, 'Mark');
+INSERT OR IGNORE INTO person (person_id, name) VALUES (2, 'James');
+INSERT OR IGNORE INTO person (person_id, name) VALUES (3, 'Chris');
+INSERT OR IGNORE INTO person (person_id, name) VALUES (4, 'Martin');
+
+INSERT OR IGNORE INTO race (race_id, distance_km, race_date)
+  VALUES (1, 5, '2013-01-05');
+INSERT OR IGNORE INTO race (race_id, distance_km, race_date)
+  VALUES (2, 5, '2013-02-06');
+
+-- Race 1 *********************************************
+-- Mark, 22 mins
+INSERT OR IGNORE INTO race_time
+(race_time_id, race_id, person_id, race_duration_secs)
+  VALUES (1, 1, 1, 1320);
+-- James, 23:15
+INSERT OR IGNORE INTO race_time
+(race_time_id, race_id, person_id, race_duration_secs)
+  VALUES (2, 1, 2, 1395);
+
+-- Race 2 *********************************************
+-- Mark, 21:35 mins
+INSERT OR IGNORE INTO race_time
+(race_time_id, race_id, person_id, race_duration_secs)
+  VALUES (3, 2, 1, 1295);
+-- James, 22:15
+INSERT OR IGNORE INTO race_time
+(race_time_id, race_id, person_id, race_duration_secs)
+  VALUES (4, 2, 2, 1335);
+        """
 
     def test_runners(self):
         self.assertEqual(['Chris', 'James', 'Mark', 'Martin'],
@@ -55,14 +99,15 @@ class CapoDBTestCase(unittest.TestCase):
 
     def test_races(self):
         self.assertEqual(
-            [self._db.Race(id=0, race_date=u'0000-00-00', distance_km=5),
-             self._db.Race(id=1, race_date=u'2013-01-05', distance_km=5),
-             self._db.Race(id=2, race_date=u'2013-02-06', distance_km=5)],
+            [self._db.Race(id=0, race_date=u'0000-00-00', distance_km=5.0),
+             self._db.Race(id=1, race_date=u'2013-01-05', distance_km=5.0),
+             self._db.Race(id=2, race_date=u'2013-02-06', distance_km=5.0)],
             list(self.cdb.races()))
 
     def test_results(self):
-        self.assertEqual(2, len(self.cdb.results(1)))
-        self.assertEqual(2, len(self.cdb.results(2)))
+        print '+++', self.cdb.results(1)
+        self.assertEqual(2, len(list(self.cdb.results(1))))
+        self.assertEqual(2, len(list(self.cdb.results(2))))
 
     def test_next_handicap(self):
         self.assertEqual(1307.5, self.cdb.next_handicap(1))
